@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VR Video Player</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
@@ -522,8 +523,8 @@ function buildScene() {
 
   if (!videoTexture) return;
 
-  const mat = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.BackSide });
-  // For flat and dual we flip to FrontSide
+  // THREE.RGBAFormat is the correct default for VideoTexture — RGBFormat was removed in r152
+  const mat     = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.BackSide });
   const matFlat = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
 
   switch (state.mode) {
@@ -676,29 +677,65 @@ el.canvas.addEventListener('wheel', e => {
 async function loadVideo(url, fromPlaylist = false) {
   if (!isValidUrl(url)) { setStatus('Invalid URL', 'err'); return; }
 
-  setStatus('Loading…', '', true);
+  setStatus('Loading\u2026', '', true);
   el.placeholder.style.display = 'none';
 
-  // Tear down previous
+  // -- Tear down previous video cleanly ------------------------------------
   if (state.videoEl) {
     state.videoEl.pause();
-    state.videoEl.src = '';
+    state.videoEl.removeAttribute('src');
     state.videoEl.load();
+    // FIX #5: remove the hidden DOM node for the old video
+    if (state.videoEl.parentNode) state.videoEl.parentNode.removeChild(state.videoEl);
   }
   if (videoTexture) { videoTexture.dispose(); videoTexture = null; }
 
+  // -- Create video element ------------------------------------------------
   const video = document.createElement('video');
-  video.crossOrigin = 'anonymous';
-  video.loop  = false;
-  video.muted = false;
+  // FIX #1: NO crossOrigin attribute. Setting it forces CORS enforcement and
+  // hard-blocks any server that does not send Access-Control-Allow-Origin.
+  // Display-only VideoTexture playback does not require crossOrigin.
+  video.loop        = false;
+  video.muted       = false;
   video.playsInline = true;
-  video.preload = 'auto';
-  video.volume = parseFloat(el.volSlider.value);
-  video.src = url;
+  video.preload     = 'auto';
+  video.autoplay    = true;   // FIX #4: give browser the autoplay hint early
+  video.volume      = parseFloat(el.volSlider.value);
 
+  // FIX #5: attach to DOM (hidden) so Safari maintains the playback session
+  video.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
+  document.body.appendChild(video);
+
+  // FIX #2: attach ALL event listeners BEFORE setting .src so no event is
+  // missed if the browser fires canplay synchronously from cache
+  video.addEventListener('timeupdate',     updateSeek);
+  video.addEventListener('progress',       updateBuffered);
+  video.addEventListener('durationchange', () => { el.timeDur.textContent = fmtTime(video.duration); });
+  video.addEventListener('ended',          playNext);
+  video.addEventListener('play',           () => { el.playBtn.textContent = '\u23F8'; });
+  video.addEventListener('pause',          () => { el.playBtn.textContent = '\u25B6'; });
+  video.addEventListener('error',          () => setStatus('Playback error \u2014 check URL or server CORS headers', 'err'));
+
+  video.addEventListener('canplay', () => {
+    // FIX #4: handle autoplay policy rejection gracefully -- mute and retry
+    video.play().catch(() => {
+      video.muted = true;
+      el.muteBtn.textContent = '\uD83D\uDD07';
+      setStatus('Autoplay blocked \u2014 audio muted automatically. Click \uD83D\uDD0A to restore.', 'warn');
+      video.play().catch(() => setStatus('Playback blocked by browser policy', 'err'));
+    });
+    setStatus('\u25B6 Playing', 'ok');
+    el.playBtn.textContent = '\u23F8';
+    el.playBtn.disabled = false;
+    updateNavButtons();
+    el.urlInput.value = url;
+  });
+
+  // FIX #2 cont.: set .src AFTER listeners are wired, then call .load()
+  video.src = url;
   state.videoEl = video;
 
-  // Playlist management
+  // -- Playlist management -------------------------------------------------
   if (!fromPlaylist) {
     const idx = state.playlist.findIndex(v => v.url === url);
     if (idx === -1) {
@@ -709,31 +746,14 @@ async function loadVideo(url, fromPlaylist = false) {
     renderPlaylist();
   }
 
-  // Texture
+  // -- Build Three.js texture and scene ------------------------------------
+  // FIX #3: do NOT set .format. Three.js VideoTexture defaults to RGBAFormat
+  // which is correct. RGBFormat was deprecated in r137 and silently breaks.
   videoTexture = new THREE.VideoTexture(video);
   videoTexture.minFilter = THREE.LinearFilter;
   videoTexture.magFilter = THREE.LinearFilter;
-  videoTexture.format    = THREE.RGBFormat;
 
   buildScene();
-
-  video.addEventListener('canplay', () => {
-    video.play().catch(() => {});
-    setStatus('▶ Playing', 'ok');
-    el.playBtn.textContent = '⏸';
-    el.playBtn.disabled = false;
-    updateNavButtons();
-    el.urlInput.value = url;
-  });
-
-  video.addEventListener('timeupdate', updateSeek);
-  video.addEventListener('progress',   updateBuffered);
-  video.addEventListener('durationchange', () => { el.timeDur.textContent = fmtTime(video.duration); });
-  video.addEventListener('ended',   playNext);
-  video.addEventListener('play',    () => { el.playBtn.textContent = '⏸'; });
-  video.addEventListener('pause',   () => { el.playBtn.textContent = '▶'; });
-  video.addEventListener('error',   () => setStatus('Playback error', 'err'));
-
   video.load();
 }
 
