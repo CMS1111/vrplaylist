@@ -98,7 +98,14 @@ html,body{height:100%;overflow:hidden;font-family:'Syne',sans-serif;background:v
 #vrBtn{padding:0 14px;height:34px;border-radius:8px;background:var(--hi);color:var(--ink);border:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0;display:flex;align-items:center;gap:6px}
 #vrBtn:hover{filter:brightness(1.1)}
 #vrBtn:disabled{opacity:.3;cursor:not-allowed}
-#zoomPanel{position:absolute;right:14px;bottom:calc(var(--hud) + 10px);background:rgba(11,15,20,.9);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:none;z-index:60;flex-direction:column;gap:8px;min-width:160px}
+/*
+ * FIX (Step 5 / layout): #zoomPanel is positioned relative to #canvas-wrap.
+ * bottom: calc(var(--hud) + 10px) puts it above the canvas floor, not
+ * above the HUD bar which lives outside #canvas-wrap. That is intentional —
+ * the panel floats over the bottom of the canvas area, safely inside the
+ * overflow:hidden boundary.
+ */
+#zoomPanel{position:absolute;right:14px;bottom:10px;background:rgba(11,15,20,.9);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:none;z-index:60;flex-direction:column;gap:8px;min-width:160px}
 #zoomPanel.open{display:flex}
 .zoom-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
 .zoom-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--hi);font-weight:500}
@@ -108,98 +115,98 @@ input[type=range]{width:100%;accent-color:var(--hi);cursor:pointer;height:4px;bo
 <body>
 <div id="app">
 
-<div id="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-mark">VR</div>
-    <div class="sb-logo-text">VOID<span>PLAY</span></div>
-  </div>
-  <div class="sb-section">
-    <span class="sb-label">Load Video</span>
-    <div class="url-row">
-      <input type="text" id="urlInput" placeholder="https://example.com/video.mp4" autocomplete="off" spellcheck="false">
-      <button class="btn btn-hi btn-sm" id="loadBtn">&#9654;</button>
+  <div id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">VR</div>
+      <div class="sb-logo-text">VOID<span>PLAY</span></div>
     </div>
-  </div>
-  <div class="sb-section">
-    <span class="sb-label">Projection Mode</span>
-    <div class="mode-grid">
-      <div class="mode-pill active" data-mode="360"><span class="pill-icon">&#127760;</span>360&deg;</div>
-      <div class="mode-pill" data-mode="180"><span class="pill-icon">&#128301;</span>180&deg;</div>
-      <div class="mode-pill" data-mode="flat"><span class="pill-icon">&#127916;</span>Flat / 2D</div>
-      <div class="mode-pill" data-mode="dual"><span class="pill-icon">&#128065;</span>2D Dual</div>
-    </div>
-  </div>
-  <div class="sb-section">
-    <span class="sb-label">Add to Playlist</span>
-    <div class="url-row">
-      <input type="text" id="singleInput" placeholder="Add URL..." autocomplete="off" spellcheck="false">
-      <button class="btn btn-ghost btn-sm" id="singleAddBtn">+</button>
-    </div>
-    <div style="margin-top:7px">
-      <textarea class="bulk-textarea" id="bulkArea" placeholder="Bulk - one URL per line"></textarea>
-      <div class="row-gap">
-        <button class="btn btn-ghost btn-sm" id="bulkAddBtn" style="flex:1">Add All</button>
-        <button class="btn btn-ghost btn-sm" id="importBtn">Import</button>
-        <button class="btn btn-ghost btn-sm" id="exportBtn">Export</button>
+    <div class="sb-section">
+      <span class="sb-label">Load Video</span>
+      <div class="url-row">
+        <input type="text" id="urlInput" placeholder="https://example.com/video.mp4" autocomplete="off" spellcheck="false">
+        <button class="btn btn-hi btn-sm" id="loadBtn">&#9654;</button>
       </div>
     </div>
-  </div>
-  <div class="playlist-header">
-    <span class="sb-label" style="margin:0">Playlist</span>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="pl-count" id="plCount">0 videos</span>
-      <button class="btn btn-danger btn-sm" id="clearAllBtn">Clear</button>
+    <div class="sb-section">
+      <span class="sb-label">Projection Mode</span>
+      <div class="mode-grid">
+        <div class="mode-pill active" data-mode="360"><span class="pill-icon">&#127760;</span>360&deg;</div>
+        <div class="mode-pill" data-mode="180"><span class="pill-icon">&#128301;</span>180&deg;</div>
+        <div class="mode-pill" data-mode="flat"><span class="pill-icon">&#127916;</span>Flat / 2D</div>
+        <div class="mode-pill" data-mode="dual"><span class="pill-icon">&#128065;</span>2D Dual</div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <span class="sb-label">Add to Playlist</span>
+      <div class="url-row">
+        <input type="text" id="singleInput" placeholder="Add URL..." autocomplete="off" spellcheck="false">
+        <button class="btn btn-ghost btn-sm" id="singleAddBtn">+</button>
+      </div>
+      <div style="margin-top:7px">
+        <textarea class="bulk-textarea" id="bulkArea" placeholder="Bulk - one URL per line"></textarea>
+        <div class="row-gap">
+          <button class="btn btn-ghost btn-sm" id="bulkAddBtn" style="flex:1">Add All</button>
+          <button class="btn btn-ghost btn-sm" id="importBtn">Import</button>
+          <button class="btn btn-ghost btn-sm" id="exportBtn">Export</button>
+        </div>
+      </div>
+    </div>
+    <div class="playlist-header">
+      <span class="sb-label" style="margin:0">Playlist</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="pl-count" id="plCount">0 videos</span>
+        <button class="btn btn-danger btn-sm" id="clearAllBtn">Clear</button>
+      </div>
+    </div>
+    <div class="playlist" id="playlist">
+      <div class="pl-empty">No videos.<br>Add a URL above.</div>
     </div>
   </div>
-  <div class="playlist" id="playlist">
-    <div class="pl-empty">No videos.<br>Add a URL above.</div>
-  </div>
-</div>
 
-<div id="main">
-  <div id="canvas-wrap">
-    <canvas id="vrCanvas"></canvas>
-    <div id="placeholder">
-      <div class="ph-ring">&#9654;</div>
-      <div class="ph-text">Load a video to begin</div>
-    </div>
-    <div id="statusBar"></div>
-    <div id="zoomPanel">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="zoom-label">FOV / ZOOM</span>
-        <span class="zoom-val" id="zoomVal">90&deg;</span>
+  <div id="main">
+    <div id="canvas-wrap">
+      <canvas id="vrCanvas"></canvas>
+      <div id="placeholder">
+        <div class="ph-ring">&#9654;</div>
+        <div class="ph-text">Load a video to begin</div>
       </div>
-      <input type="range" id="zoomSlider" min="30" max="150" value="90" step="1">
-      <button class="btn btn-ghost btn-sm" id="zoomReset" style="width:100%;margin-top:2px">Reset</button>
+      <div id="statusBar"></div>
+      <div id="zoomPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="zoom-label">FOV / ZOOM</span>
+          <span class="zoom-val" id="zoomVal">90&deg;</span>
+        </div>
+        <input type="range" id="zoomSlider" min="30" max="150" value="90" step="1">
+        <button class="btn btn-ghost btn-sm" id="zoomReset" style="width:100%;margin-top:2px">Reset</button>
+      </div>
+    </div>
+    <div id="hud">
+      <button class="hud-btn" id="prevBtn" title="Prev (Shift+Left)" disabled>&#9198;</button>
+      <button class="hud-btn" id="playBtn" title="Play/Pause (Space)" disabled>&#9654;</button>
+      <button class="hud-btn" id="nextBtn" title="Next (Shift+Right)" disabled>&#9197;</button>
+      <div class="hud-sep"></div>
+      <div class="seek-wrap">
+        <div class="seek-bar-track" id="seekTrack">
+          <div class="seek-bar-buf"  id="seekBuf"  style="width:0%"></div>
+          <div class="seek-bar-fill" id="seekFill" style="width:0%"></div>
+          <div class="seek-bar-thumb" id="seekThumb" style="left:0%"></div>
+        </div>
+        <div class="seek-time">
+          <span class="time-label" id="timeCur">0:00</span>
+          <span class="time-label" id="timeDur">0:00</span>
+        </div>
+      </div>
+      <div class="hud-sep"></div>
+      <button class="hud-btn" id="muteBtn" title="Mute (M)">&#128266;</button>
+      <input type="range" id="volSlider" min="0" max="1" step="0.02" value="1"
+             style="width:60px;accent-color:var(--hi);cursor:pointer">
+      <div class="hud-sep"></div>
+      <button class="hud-btn" id="zoomToggleBtn" title="Zoom/FOV (Z)">&#8853;</button>
+      <button class="hud-btn" id="panBtn"         title="Pan (P)">&#10809;</button>
+      <div class="hud-sep"></div>
+      <button id="vrBtn" disabled><span>&#8857;</span> Enter VR</button>
     </div>
   </div>
-  <div id="hud">
-    <button class="hud-btn" id="prevBtn" title="Prev (Shift+Left)" disabled>&#9198;</button>
-    <button class="hud-btn" id="playBtn" title="Play/Pause (Space)" disabled>&#9654;</button>
-    <button class="hud-btn" id="nextBtn" title="Next (Shift+Right)" disabled>&#9197;</button>
-    <div class="hud-sep"></div>
-    <div class="seek-wrap">
-      <div class="seek-bar-track" id="seekTrack">
-        <div class="seek-bar-buf"  id="seekBuf"  style="width:0%"></div>
-        <div class="seek-bar-fill" id="seekFill" style="width:0%"></div>
-        <div class="seek-bar-thumb" id="seekThumb" style="left:0%"></div>
-      </div>
-      <div class="seek-time">
-        <span class="time-label" id="timeCur">0:00</span>
-        <span class="time-label" id="timeDur">0:00</span>
-      </div>
-    </div>
-    <div class="hud-sep"></div>
-    <button class="hud-btn" id="muteBtn" title="Mute (M)">&#128266;</button>
-    <input type="range" id="volSlider" min="0" max="1" step="0.02" value="1"
-           style="width:60px;accent-color:var(--hi);cursor:pointer">
-    <div class="hud-sep"></div>
-    <button class="hud-btn" id="zoomToggleBtn" title="Zoom/FOV (Z)">&#8853;</button>
-    <button class="hud-btn" id="panBtn" title="Pan (P)">&#10809;</button>
-    <div class="hud-sep"></div>
-    <button id="vrBtn" disabled><span>&#8857;</span> Enter VR</button>
-  </div>
-</div>
 
 </div>
 <input type="file" id="importFile" accept=".txt,.json" style="display:none">
@@ -209,157 +216,155 @@ input[type=range]{width:100%;accent-color:var(--hi);cursor:pointer;height:4px;bo
 'use strict';
 
 /* ================================================================
-   THE CORE FIX — WHY THIS WORKS
+   VOIDPLAY — VR Video Player
    ================================================================
-   WebGL's texImage2D throws "DOMException: The operation is insecure"
-   when given a cross-origin video element directly, even from HTTPS.
-   This is the browser's canvas taint protection: any cross-origin
-   media fed straight into WebGL taints the context and is blocked.
+   Pipeline overview:
+     URL → <video crossOrigin="anonymous"> → proxyCanvas (2D, same-origin)
+       → THREE.CanvasTexture → sphere/plane geometry → WebGL canvas
 
-   The fix: never give WebGL the video element. Instead:
-     1. Create a same-origin <canvas> (proxy canvas).
-     2. Each frame, call ctx.drawImage(video) onto that canvas.
-     3. Give THREE.CanvasTexture that canvas.
-
-   The proxy canvas is created by OUR page, so it is same-origin.
-   WebGL can always read pixels from a same-origin canvas regardless
-   of what was drawn into it. The video never touches WebGL directly.
-
-   Frame pumping uses requestVideoFrameCallback (where supported) for
-   exact per-frame accuracy, with a requestAnimationFrame fallback.
+   The proxy canvas is the critical link. Drawing a <video> into a
+   2D canvas and then wrapping that canvas in a CanvasTexture is the
+   only path that avoids WebGL's direct cross-origin taint check.
+   With crossOrigin="anonymous" set on the video element BEFORE src,
+   servers that send Access-Control-Allow-Origin keep the canvas clean.
+   Servers that omit it produce a network-level error (surfaced to the
+   user) rather than a silent black screen.
 ================================================================ */
 
-/* ---- STATE ---- */
-var state = {
+/* ================================================================
+   STATE
+================================================================ */
+
+/**
+ * Global mutable application state.
+ * @type {{
+ *   playlist: Array<{url:string, name:string}>,
+ *   current:  number,
+ *   mode:     string,
+ *   videoEl:  HTMLVideoElement|null,
+ *   panEnabled: boolean,
+ *   vrSession:  XRSession|null
+ * }}
+ */
+const state = {
   playlist: [], current: -1, mode: '360',
-  videoEl: null, panEnabled: false, vrSession: null
+  videoEl: null, panEnabled: false, vrSession: null,
 };
-
-/* ---- DOM REFS ---- */
-var $ = function(id){ return document.getElementById(id); };
-var el = {
-  urlInput:$('urlInput'), loadBtn:$('loadBtn'), statusBar:$('statusBar'),
-  placeholder:$('placeholder'), canvas:$('vrCanvas'), canvasWrap:$('canvas-wrap'),
-  prevBtn:$('prevBtn'), playBtn:$('playBtn'), nextBtn:$('nextBtn'),
-  muteBtn:$('muteBtn'), volSlider:$('volSlider'),
-  seekTrack:$('seekTrack'), seekBuf:$('seekBuf'), seekFill:$('seekFill'),
-  seekThumb:$('seekThumb'), timeCur:$('timeCur'), timeDur:$('timeDur'),
-  panBtn:$('panBtn'), zoomToggle:$('zoomToggleBtn'), zoomPanel:$('zoomPanel'),
-  zoomSlider:$('zoomSlider'), zoomVal:$('zoomVal'), zoomReset:$('zoomReset'),
-  vrBtn:$('vrBtn'), singleInput:$('singleInput'), singleAddBtn:$('singleAddBtn'),
-  bulkArea:$('bulkArea'), bulkAddBtn:$('bulkAddBtn'),
-  importBtn:$('importBtn'), exportBtn:$('exportBtn'), clearAllBtn:$('clearAllBtn'),
-  playlist:$('playlist'), plCount:$('plCount'), importFile:$('importFile')
-};
-
-/* ---- STATUS ---- */
-var statusTimer = null;
-function setStatus(msg, type, persist) {
-  el.statusBar.textContent = msg;
-  el.statusBar.className = 'show ' + (type || '');
-  clearTimeout(statusTimer);
-  if (!persist) statusTimer = setTimeout(function(){ el.statusBar.classList.remove('show'); }, 3500);
-}
-
-/* ---- UTILS ---- */
-function fmtTime(s) {
-  if (!isFinite(s)) return '0:00';
-  var m = Math.floor(s / 60), sec = Math.floor(s % 60);
-  return m + ':' + (sec < 10 ? '0' : '') + sec;
-}
-function getFilename(url) {
-  try {
-    var u = new URL(url), parts = u.pathname.split('/').filter(Boolean);
-    var last = parts[parts.length - 1];
-    return last ? decodeURIComponent(last) : u.hostname;
-  } catch(e) { return url.substring(0, 40); }
-}
-function isValidUrl(url) {
-  return typeof url === 'string' &&
-    (url.startsWith('http://') || url.startsWith('https://')) &&
-    url.length < 2000;
-}
-function truncate(s, n) { n=n||36; return s.length>n ? s.slice(0,n-1)+'\u2026' : s; }
-function escHtml(s) { var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 /* ================================================================
-   CANVAS PROXY + THREE.JS SCENE
-   proxyCanvas  — a plain 2D canvas we drawImage() the video into
-   proxyCtx     — its 2D context
-   canvasTex    — THREE.CanvasTexture pointing at proxyCanvas
-   ================================================================ */
-var proxyCanvas = null;
-var proxyCtx    = null;
-var canvasTex   = null;
-var frameLoopId = null;   // rAF handle (fallback path)
-var vfcActive   = false;  // true when requestVideoFrameCallback is running
+   DOM REFS
+================================================================ */
 
-var renderer = new THREE.WebGLRenderer({ canvas: el.canvas, antialias: true });
+/** @param {string} id @returns {HTMLElement} */
+const $ = id => document.getElementById(id);
+
+const el = {
+  urlInput:     $('urlInput'),     loadBtn:      $('loadBtn'),
+  statusBar:    $('statusBar'),    placeholder:  $('placeholder'),
+  canvas:       $('vrCanvas'),     canvasWrap:   $('canvas-wrap'),
+  prevBtn:      $('prevBtn'),      playBtn:      $('playBtn'),      nextBtn:  $('nextBtn'),
+  muteBtn:      $('muteBtn'),      volSlider:    $('volSlider'),
+  seekTrack:    $('seekTrack'),    seekBuf:      $('seekBuf'),
+  seekFill:     $('seekFill'),     seekThumb:    $('seekThumb'),
+  timeCur:      $('timeCur'),      timeDur:      $('timeDur'),
+  panBtn:       $('panBtn'),       zoomToggle:   $('zoomToggleBtn'),
+  zoomPanel:    $('zoomPanel'),    zoomSlider:   $('zoomSlider'),
+  zoomVal:      $('zoomVal'),      zoomReset:    $('zoomReset'),
+  vrBtn:        $('vrBtn'),        singleInput:  $('singleInput'),
+  singleAddBtn: $('singleAddBtn'), bulkArea:     $('bulkArea'),
+  bulkAddBtn:   $('bulkAddBtn'),   importBtn:    $('importBtn'),
+  exportBtn:    $('exportBtn'),    clearAllBtn:  $('clearAllBtn'),
+  playlist:     $('playlist'),     plCount:      $('plCount'),
+  importFile:   $('importFile'),
+};
+
+/* ================================================================
+   STATUS BAR
+================================================================ */
+
+/** @type {ReturnType<typeof setTimeout>|null} */
+let statusTimer = null;
+
+/**
+ * Show a message in the floating status bar.
+ * @param {string}  msg           - Display text
+ * @param {string}  [type='']     - CSS modifier: 'ok' | 'err' | 'warn' | ''
+ * @param {boolean} [persist=false] - Skip auto-hide when true
+ */
+function setStatus(msg, type = '', persist = false) {
+  el.statusBar.textContent = msg;
+  el.statusBar.className   = `show ${type}`;
+  clearTimeout(statusTimer);
+  if (!persist) {
+    statusTimer = setTimeout(() => el.statusBar.classList.remove('show'), 3500);
+  }
+}
+
+/* ================================================================
+   UTILITIES
+================================================================ */
+
+/** @param {number} s @returns {string} M:SS */
+const fmtTime = s => {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+};
+
+/** Extract a human-readable label from a video URL. */
+const getFilename = url => {
+  try {
+    const u     = new URL(url);
+    const parts = u.pathname.split('/').filter(Boolean);
+    const last  = parts[parts.length - 1];
+    return last ? decodeURIComponent(last) : u.hostname;
+  } catch { return url.substring(0, 40); }
+};
+
+/** Accept only absolute http/https URLs under 2000 chars. */
+const isValidUrl = url =>
+  typeof url === 'string' &&
+  (url.startsWith('http://') || url.startsWith('https://')) &&
+  url.length < 2000;
+
+/** Truncate with trailing ellipsis. @param {string} s @param {number} [n=36] */
+const truncate = (s, n = 36) => s.length > n ? `${s.slice(0, n - 1)}\u2026` : s;
+
+/** Safely escape a string for use in innerHTML. */
+const escHtml = s => {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+};
+
+/* ================================================================
+   THREE.JS SCENE SETUP
+================================================================ */
+
+const renderer = new THREE.WebGLRenderer({ canvas: el.canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.xr.enabled = true;
 
-var scene = new THREE.Scene();
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
-var camera = new THREE.PerspectiveCamera(90, 1, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(90, 1, 0.1, 1000);
 camera.position.set(0, 0, 0);
 scene.add(camera);
 
-var meshMain = null;
-var meshAux  = null;
+/** @type {THREE.Mesh|null} */ let meshMain = null;
+/** @type {THREE.Mesh|null} */ let meshAux  = null;
 
-/* ---- buildScene ----
-   Creates geometry+material for the current projection mode.
-   Uses canvasTex (THREE.CanvasTexture) — same-origin, always safe. */
-function buildScene() {
-  if (meshMain) { scene.remove(meshMain); meshMain.geometry.dispose(); meshMain.material.dispose(); meshMain = null; }
-  if (meshAux)  { scene.remove(meshAux);  meshAux.geometry.dispose();  meshAux.material.dispose();  meshAux = null; }
-  if (!canvasTex) return;
+/**
+ * Three.js render loop. Deliberately decoupled from the frame pump —
+ * this only calls renderer.render(); it never touches the video or canvas.
+ * Frame pumping (drawImage + needsUpdate) happens in a separate loop.
+ */
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
 
-  var fov = parseFloat(el.zoomSlider.value);
-
-  function makeMat(side) {
-    return new THREE.MeshBasicMaterial({ map: canvasTex, side: side });
-  }
-
-  if (state.mode === '360') {
-    meshMain = new THREE.Mesh(new THREE.SphereGeometry(500, 60, 40), makeMat(THREE.BackSide));
-    meshMain.scale.set(-1, 1, 1);
-    scene.add(meshMain);
-  } else if (state.mode === '180') {
-    meshMain = new THREE.Mesh(
-      new THREE.SphereGeometry(500, 60, 40, -Math.PI/2, Math.PI, 0, Math.PI),
-      makeMat(THREE.BackSide)
-    );
-    meshMain.scale.set(-1, 1, 1);
-    scene.add(meshMain);
-  } else if (state.mode === 'flat') {
-    meshMain = new THREE.Mesh(new THREE.PlaneGeometry(7.1, 4), makeMat(THREE.FrontSide));
-    meshMain.position.set(0, 0, -4);
-    scene.add(meshMain);
-  } else if (state.mode === 'dual') {
-    meshMain = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 4), makeMat(THREE.FrontSide));
-    meshMain.position.set(-1.85, 0, -4);
-    scene.add(meshMain);
-    meshAux = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 4), makeMat(THREE.FrontSide));
-    meshAux.position.set(1.85, 0, -4);
-    scene.add(meshAux);
-  }
-
-  camera.fov = fov;
-  camera.updateProjectionMatrix();
-}
-
-/* ---- render loop ----
-   The Three.js render loop only calls renderer.render().
-   Frame pumping (drawImage + needsUpdate) is handled separately
-   via requestVideoFrameCallback / rAF so timing is accurate. */
-renderer.setAnimationLoop(function() {
-  renderer.render(scene, camera);
-});
-
+/** Sync renderer size + camera aspect with the CSS container size. */
 function resizeRenderer() {
-  var w = el.canvasWrap.clientWidth, h = el.canvasWrap.clientHeight;
+  const w = el.canvasWrap.clientWidth, h = el.canvasWrap.clientHeight;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
@@ -368,472 +373,858 @@ new ResizeObserver(resizeRenderer).observe(el.canvasWrap);
 resizeRenderer();
 
 /* ================================================================
-   FRAME PUMP
-   Draws video → proxyCanvas every frame, marks texture dirty.
-   Uses requestVideoFrameCallback when available (Chrome/Edge/Safari)
-   for exact per-decoded-frame timing. Falls back to rAF on Firefox
-   (which doesn't support rVFC as of 2025 but rAF works fine there).
+   PROXY CANVAS + CANVAS TEXTURE
+   ----------------------------------------------------------------
+   Each video load creates a *fresh* same-origin 2D canvas. We draw
+   the video into it every frame and wrap it in THREE.CanvasTexture.
+
+   WHY A PROXY CANVAS:
+     Passing a <video> directly to WebGL texImage2D fails with a
+     SecurityError whenever the video is cross-origin, even if the
+     server sends CORS headers — the browser's canvas-taint rules
+     apply at the point of GPU upload. A CanvasTexture backed by a
+     same-origin 2D canvas bypasses that check; the 2D canvas is the
+     trusted intermediary.
+
+   WHY crossOrigin = "anonymous" ON THE VIDEO:
+     Without it the browser loads the video as opaque/no-cors.
+     ctx.drawImage(opaqueVideo) then taints our proxy canvas, and
+     the next GPU upload still fails with SecurityError.
+     Setting crossOrigin = "anonymous" before src instructs the
+     browser to do a CORS fetch. Servers that return
+     Access-Control-Allow-Origin: * keep the canvas clean and the
+     whole pipeline works end-to-end. Servers that return no CORS
+     header cause a network-level load failure (video error event)
+     rather than a silent black screen — the honest failure mode.
+
+   WHY A FRESH CANVAS PER LOAD:
+     Taint is permanent on a 2D canvas — there is no "untaint" API.
+     Nulling proxyCanvas on each teardown guarantees a clean slate.
 ================================================================ */
+
+/** @type {HTMLCanvasElement|null}        */ let proxyCanvas = null;
+/** @type {CanvasRenderingContext2D|null} */ let proxyCtx    = null;
+/** @type {THREE.CanvasTexture|null}      */ let canvasTex   = null;
+
+/* ================================================================
+   FRAME PUMP
+   ----------------------------------------------------------------
+   Draws the current decoded video frame into the proxy canvas each
+   tick, then marks canvasTex dirty so Three.js re-uploads the
+   pixels to the GPU on the next renderer.render() call.
+
+   Two paths:
+     • requestVideoFrameCallback (rVFC) — Chrome/Edge/Safari.
+       Fires exactly once per decoded frame; zero wasted draws.
+     • requestAnimationFrame (rAF) — fallback for Firefox and
+       browsers that do not yet support rVFC.
+
+   pumpActive:
+     Module-level boolean. stopFramePump() sets it false. Both loop
+     paths check it after pumpFrame() returns before rescheduling.
+     This ensures a SecurityError (CORS failure) detected inside
+     pumpFrame can permanently halt the loop via stopFramePump()
+     without a one-extra-tick race.
+
+   state.videoEl !== video:
+     Stale-loop guard — stops a loop whose video has been replaced
+     by a newer loadVideo() call. Complements pumpActive.
+================================================================ */
+
+/** @type {number|null} */ let frameLoopId = null;
+/** @type {boolean}     */ let vfcActive   = false;
+/** @type {boolean}     */ let pumpActive  = false;  // FIX (Step 2): pump lifecycle flag
+
+/**
+ * Draw one video frame into the proxy canvas and flag the texture dirty.
+ *
+ * SecurityError → canvas is tainted (CORS blocked). Permanently halt
+ * the pump and show an actionable error message. We must not re-throw
+ * because both the rAF and rVFC callers reschedule *after* this call;
+ * stopFramePump() sets pumpActive = false so they self-terminate.
+ *
+ * Other errors (e.g. mid-seek decode gap) are non-fatal — log and
+ * continue; the next frame will likely succeed.
+ *
+ * @param {HTMLVideoElement} video
+ */
 function pumpFrame(video) {
   if (!proxyCtx || !canvasTex) return;
-  if (video.readyState >= 2) {  /* HAVE_CURRENT_DATA or better */
+  if (video.readyState < 2) return; // HAVE_CURRENT_DATA not yet available
+
+  try {
     proxyCtx.drawImage(video, 0, 0, proxyCanvas.width, proxyCanvas.height);
     canvasTex.needsUpdate = true;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'SecurityError') {
+      // Canvas tainted — the video server did not send CORS headers.
+      // No client-side workaround exists; halt the pump permanently.
+      stopFramePump();
+      setStatus(
+        'CORS blocked \u2014 server must send Access-Control-Allow-Origin header',
+        'err', true
+      );
+    } else {
+      // Non-security error: log and let the loop continue.
+      console.warn('[VoidPlay] pumpFrame non-fatal error:', err);
+    }
   }
 }
 
+/**
+ * Start the per-frame pump for the given video element.
+ * Any previously running pump is stopped first.
+ * @param {HTMLVideoElement} video
+ */
 function startFramePump(video) {
   stopFramePump();
+  pumpActive = true; // FIX (Step 2): mark pump as active
 
   if (typeof video.requestVideoFrameCallback === 'function') {
-    /* Accurate path: fires exactly when a new decoded frame is ready */
+    // Accurate path: fires exactly once per decoded frame.
     vfcActive = true;
-    function vfcLoop() {
-      if (state.videoEl !== video) return;  /* video changed, stop */
+    const vfcLoop = () => {
+      if (!pumpActive || state.videoEl !== video) return; // FIX (Step 2): check flag
       pumpFrame(video);
-      video.requestVideoFrameCallback(vfcLoop);
-    }
+      if (pumpActive) video.requestVideoFrameCallback(vfcLoop); // reschedule only if still active
+    };
     video.requestVideoFrameCallback(vfcLoop);
   } else {
-    /* Fallback: rAF — works on all browsers including Firefox */
+    // Fallback: rAF — reliable on all browsers including Firefox.
     vfcActive = false;
-    function rafLoop() {
-      if (state.videoEl !== video) return;  /* video changed, stop */
+    const rafLoop = () => {
+      if (!pumpActive || state.videoEl !== video) return; // FIX (Step 2): check flag
       pumpFrame(video);
-      frameLoopId = requestAnimationFrame(rafLoop);
-    }
+      if (pumpActive) frameLoopId = requestAnimationFrame(rafLoop);
+    };
     frameLoopId = requestAnimationFrame(rafLoop);
   }
 }
 
+/**
+ * Unconditionally halt the running frame pump.
+ * Sets pumpActive = false so both rVFC and rAF paths self-terminate
+ * on their next scheduled tick even if cancelAnimationFrame races.
+ */
 function stopFramePump() {
+  pumpActive = false; // FIX (Step 2): signal both loop types to stop
   if (frameLoopId !== null) { cancelAnimationFrame(frameLoopId); frameLoopId = null; }
-  /* rVFC stops itself when vfcLoop returns without re-registering */
   vfcActive = false;
 }
 
 /* ================================================================
-   PAN + ZOOM
+   SCENE BUILDER
+   ----------------------------------------------------------------
+   Rebuilds Three.js geometry + material for the active projection
+   mode. Called once after canvasTex is created (inside onCanPlay)
+   and on every mode-pill click.
+
+   UV RESET (top of function):
+     Must run before any mode-specific UV override. Without it,
+     switching away from 180° mode would leave repeat=(0.5,1) applied
+     to 360°/flat/dual renders, squishing or cropping the texture.
+
+   GEOMETRY INVERSION (360° + 180° sphere modes):
+     geo.scale(-1, 1, 1) flips vertex positions and winding order in
+     the geometry buffer, turning the sphere inside-out. The camera
+     at origin then sees FrontSide faces from the inside — correct
+     for immersive 360° viewing.
+
+     IMPORTANT: We scale the *geometry*, not the mesh transform.
+     mesh.scale.set(-1,1,1) would cause Three.js r128's renderer to
+     detect a negative-determinant world matrix and automatically
+     flip the winding-order check, cancelling the BackSide setting
+     and producing no visible geometry from inside the sphere.
+     Geometry-level scaling has no such side-effect.
 ================================================================ */
-var drag = { active:false, x:0, y:0, lon:0, lat:0 };
 
-el.canvas.addEventListener('mousedown', function(e) {
-  if (!state.panEnabled || !meshMain) return;
-  drag.active=true; drag.x=e.clientX; drag.y=e.clientY;
-  el.canvas.style.cursor='grabbing';
-});
-window.addEventListener('mousemove', function(e) {
-  if (!drag.active) return;
-  drag.lon -= (e.clientX-drag.x)*0.25;
-  drag.lat += (e.clientY-drag.y)*0.15;
-  drag.lat = Math.max(-85, Math.min(85, drag.lat));
-  drag.x=e.clientX; drag.y=e.clientY;
-  applyPan();
-});
-window.addEventListener('mouseup', function() {
-  if (!drag.active) return;
-  drag.active=false;
-  el.canvas.style.cursor = state.panEnabled ? 'grab' : 'default';
-});
-el.canvas.addEventListener('touchstart', function(e) {
-  if (!state.panEnabled||!meshMain) return;
-  var t=e.touches[0];
-  drag.active=true; drag.x=t.clientX; drag.y=t.clientY;
-}, {passive:true});
-window.addEventListener('touchmove', function(e) {
-  if (!drag.active) return;
-  var t=e.touches[0];
-  drag.lon -= (t.clientX-drag.x)*0.25;
-  drag.lat += (t.clientY-drag.y)*0.15;
-  drag.lat = Math.max(-85, Math.min(85, drag.lat));
-  drag.x=t.clientX; drag.y=t.clientY;
-  applyPan();
-}, {passive:true});
-window.addEventListener('touchend', function(){ drag.active=false; });
+/**
+ * (Re)build the Three.js scene for the current projection mode.
+ * Disposes any previous meshes, resets UV state, then creates
+ * fresh geometry and material from canvasTex.
+ */
+function buildScene() {
+  // Dispose previous geometry + material to free GPU memory.
+  if (meshMain) { scene.remove(meshMain); meshMain.geometry.dispose(); meshMain.material.dispose(); meshMain = null; }
+  if (meshAux)  { scene.remove(meshAux);  meshAux.geometry.dispose();  meshAux.material.dispose();  meshAux  = null; }
+  if (!canvasTex) return;
 
-function applyPan() {
-  var phi   = THREE.MathUtils.degToRad(90 - drag.lat);
-  var theta = THREE.MathUtils.degToRad(drag.lon);
-  camera.lookAt(new THREE.Vector3(
-    500*Math.sin(phi)*Math.cos(theta),
-    500*Math.cos(phi),
-    500*Math.sin(phi)*Math.sin(theta)
-  ));
+  // FIX (Step 3): always reset UV transform before mode-specific overrides.
+  // Prevents 180°'s half-crop from bleeding into other modes on switch.
+  canvasTex.repeat.set(1, 1);
+  canvasTex.offset.set(0, 0);
+  canvasTex.needsUpdate = true;
+
+  const fov = parseFloat(el.zoomSlider.value);
+
+  /**
+   * Create a standard MeshBasicMaterial mapped to the proxy canvas texture.
+   * All modes use the default FrontSide because sphere geometry is inverted
+   * at the buffer level (see invertedSphere), and planes naturally face the
+   * camera with FrontSide.
+   * @returns {THREE.MeshBasicMaterial}
+   */
+  const makeMat = () => new THREE.MeshBasicMaterial({ map: canvasTex });
+
+  /**
+   * Create a SphereGeometry with geometry-level X-axis inversion.
+   * Flipping the vertex buffer (not the mesh transform) makes FrontSide
+   * faces point inward — toward the camera at the origin — without
+   * triggering Three.js's automatic winding-flip for negative-scale
+   * world matrices.
+   * UV coordinates are unchanged by geo.scale(), so the equirectangular
+   * texture maps correctly without any additional texture transform.
+   * @param {...any} args - Forwarded to THREE.SphereGeometry constructor
+   * @returns {THREE.SphereGeometry}
+   */
+  const invertedSphere = (...args) => {
+    const geo = new THREE.SphereGeometry(...args);
+    geo.scale(-1, 1, 1); // FIX (Step 3): invert GEOMETRY, not mesh transform
+    return geo;
+  };
+
+  if (state.mode === '360') {
+    /*
+     * Full equirectangular sphere (360° × 180°).
+     * The inverted geometry + FrontSide places the viewer inside the sphere
+     * with the texture wrapping correctly around every direction.
+     * NO mesh.scale — that would re-trigger Three.js's winding compensation.
+     */
+    meshMain = new THREE.Mesh(invertedSphere(500, 60, 40), makeMat());
+    scene.add(meshMain);
+
+  } else if (state.mode === '180') {
+    /*
+     * Front hemisphere for monoscopic 180° VR content.
+     * phiStart=-π/2, phiLength=π spans the front-facing 180° arc.
+     * UV repeat (0.5, 1) crops to the left half of the equirectangular
+     * frame, where standard 180° mono video content is encoded.
+     * FIX (Step 3): no mesh.scale; UV crop applied after scene.add.
+     */
+    meshMain = new THREE.Mesh(
+      invertedSphere(500, 60, 40, -Math.PI / 2, Math.PI, 0, Math.PI),
+      makeMat()
+    );
+    scene.add(meshMain);
+    canvasTex.repeat.set(0.5, 1); // FIX (Step 3): 180° UV crop — left half only
+    canvasTex.offset.set(0, 0);
+    canvasTex.needsUpdate = true;
+
+  } else if (state.mode === 'flat') {
+    /*
+     * Standard flat / 2D cinema screen — 7.1 × 4 units at z = -4.
+     * Approximates a 16:9 screen at a comfortable VR viewing distance.
+     */
+    meshMain = new THREE.Mesh(new THREE.PlaneGeometry(7.1, 4), makeMat());
+    meshMain.position.set(0, 0, -4);
+    scene.add(meshMain);
+
+  } else if (state.mode === 'dual') {
+    /*
+     * Two side-by-side flat screens sharing the same texture.
+     * Both planes show the full video — useful for side-by-side
+     * non-stereoscopic content or a simulated dual-monitor layout.
+     */
+    meshMain = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 4), makeMat());
+    meshMain.position.set(-1.85, 0, -4);
+    scene.add(meshMain);
+
+    meshAux = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 4), makeMat());
+    meshAux.position.set(1.85, 0, -4);
+    scene.add(meshAux);
+  }
+
+  camera.fov = fov;
+  camera.updateProjectionMatrix();
 }
 
-el.canvas.addEventListener('wheel', function(e) {
-  e.preventDefault();
-  var fov = Math.max(30, Math.min(150, camera.fov + e.deltaY*0.04));
-  camera.fov=fov; camera.updateProjectionMatrix();
-  el.zoomSlider.value=fov;
-  el.zoomVal.textContent = Math.round(fov)+'\u00b0';
-}, {passive:false});
-
 /* ================================================================
-   VIDEO LOADING
+   VIDEO LIFECYCLE
 ================================================================ */
-function loadVideo(url, fromPlaylist) {
-  fromPlaylist = !!fromPlaylist;
+
+/**
+ * Load and begin playing a video from a URL.
+ *
+ * Full teardown of any previous video, proxy canvas, texture, and
+ * geometry occurs before the new video is constructed. This prevents
+ * GPU resource leaks and, critically, canvas-taint leakage — a
+ * tainted canvas cannot be untainted, so we always null proxyCanvas
+ * and create a fresh one per load.
+ *
+ * crossOrigin = "anonymous" is set BEFORE video.src so the browser
+ * issues a CORS preflight on the video resource. This is the only
+ * point in the pipeline where CORS is negotiated with the server.
+ *
+ * @param {string}  url              - Absolute HTTP(S) video URL
+ * @param {boolean} [fromPlaylist=false] - Skip auto-add when already managed
+ *                                        by the playlist
+ */
+function loadVideo(url, fromPlaylist = false) {
   if (!isValidUrl(url)) { setStatus('Invalid URL', 'err'); return; }
 
-  setStatus('Loading...', '', true);
+  setStatus('Loading\u2026', '', true);
   el.placeholder.style.display = 'none';
 
-  /* -- tear down previous -- */
+  // --- tear down previous video + GPU resources ---
   stopFramePump();
+
   if (state.videoEl) {
     state.videoEl.pause();
     state.videoEl.removeAttribute('src');
-    state.videoEl.load();
-    if (state.videoEl.parentNode) state.videoEl.parentNode.removeChild(state.videoEl);
+    state.videoEl.load(); // reset internal decode pipeline
+    state.videoEl.remove();
+    state.videoEl = null;
   }
+
+  // FIX (Step 1): null the proxy canvas so the next load creates a
+  // fresh, guaranteed-untainted canvas. Canvas taint is permanent —
+  // there is no API to clear it — so we must discard and recreate.
+  proxyCanvas = null;
+  proxyCtx    = null;
+
   if (canvasTex) { canvasTex.dispose(); canvasTex = null; }
-  if (meshMain)  { scene.remove(meshMain); meshMain.geometry.dispose(); meshMain.material.dispose(); meshMain=null; }
-  if (meshAux)   { scene.remove(meshAux);  meshAux.geometry.dispose();  meshAux.material.dispose();  meshAux=null; }
+  if (meshMain)  { scene.remove(meshMain); meshMain.geometry.dispose(); meshMain.material.dispose(); meshMain = null; }
+  if (meshAux)   { scene.remove(meshAux);  meshAux.geometry.dispose();  meshAux.material.dispose();  meshAux  = null; }
 
-  /* -- proxy canvas (created once, resized per video) -- */
-  if (!proxyCanvas) {
-    proxyCanvas = document.createElement('canvas');
-    proxyCtx    = proxyCanvas.getContext('2d');
-  }
+  // --- fresh proxy canvas for this video ---
+  proxyCanvas = document.createElement('canvas');
+  proxyCtx    = proxyCanvas.getContext('2d');
 
-  /* -- video element -- */
-  var video = document.createElement('video');
-  /* No crossOrigin attribute. The video loads as opaque/no-cors.
-     We never pass it to WebGL directly, so there is no taint issue.
-     The proxy canvas is same-origin and WebGL can read it freely. */
+  // --- video element ---
+  const video = document.createElement('video');
+
+  /*
+   * FIX (Step 1): crossOrigin MUST be set before src.
+   * Setting it after src has no effect — the browser has already
+   * dispatched the no-cors request by then.
+   * "anonymous" = CORS request without credentials (cookies, etc.).
+   */
+  video.crossOrigin = 'anonymous';
+
   video.loop        = false;
   video.muted       = false;
   video.playsInline = true;
   video.preload     = 'auto';
-  video.autoplay    = true;
-  video.volume      = parseFloat(el.volSlider.value);
+  // FIX (Step 4): removed video.autoplay = true. The explicit play()
+  // call inside onCanPlay is the sole, authoritative playback trigger.
+  // autoplay + play() created a double-start race and an unreliable
+  // mute-fallback status message on mobile.
+  video.volume = parseFloat(el.volSlider.value);
 
-  /* Keep in DOM (hidden) — required on some browsers to sustain decode */
-  video.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0';
+  // Keep in DOM (hidden) — required on some browsers to sustain decode.
+  video.style.cssText =
+    'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0';
   document.body.appendChild(video);
 
-  /* -- listeners wired BEFORE setting src -- */
-  video.addEventListener('timeupdate', updateSeek);
-  video.addEventListener('progress',   updateBuffered);
-  video.addEventListener('durationchange', function() {
-    el.timeDur.textContent = fmtTime(video.duration);
-  });
-  video.addEventListener('ended', playNext);
-  video.addEventListener('play',  function(){ el.playBtn.textContent='\u23F8'; });
-  video.addEventListener('pause', function(){ el.playBtn.textContent='\u25B6'; });
-  video.addEventListener('error', function(){
-    setStatus('Playback error - check URL', 'err');
+  // --- wire all listeners BEFORE setting src ---
+
+  video.addEventListener('timeupdate',     updateSeek);
+  video.addEventListener('progress',       updateBuffered);
+  video.addEventListener('durationchange', () => { el.timeDur.textContent = fmtTime(video.duration); });
+  video.addEventListener('ended',          playNext);
+  video.addEventListener('play',           () => { el.playBtn.textContent = '\u23F8'; });
+  video.addEventListener('pause',          () => { el.playBtn.textContent = '\u25B6'; });
+
+  video.addEventListener('error', () => {
+    const err = video.error;
+    /*
+     * MEDIA_ERR_NETWORK (2) or MEDIA_ERR_SRC_NOT_SUPPORTED (4) often
+     * mean the server rejected the CORS preflight — i.e. returned no
+     * Access-Control-Allow-Origin header. Surface a hint to the user.
+     */
+    const corsHint = (err && (err.code === 2 || err.code === 4))
+      ? ' (server may not allow cross-origin requests)'
+      : '';
+    setStatus(`Playback error${corsHint} \u2014 check URL`, 'err');
   });
 
   video.addEventListener('canplay', function onCanPlay() {
     video.removeEventListener('canplay', onCanPlay);
 
-    /* Size the proxy canvas to match the video's natural resolution.
-       This gives the best quality for the texture. */
-    var vw = video.videoWidth  || 1280;
-    var vh = video.videoHeight || 720;
+    // Size proxy canvas to video's native resolution for best texture quality.
+    const vw = video.videoWidth  || 1280;
+    const vh = video.videoHeight || 720;
     proxyCanvas.width  = vw;
     proxyCanvas.height = vh;
 
-    /* Paint first frame immediately so the scene isn't black on load */
-    proxyCtx.drawImage(video, 0, 0, vw, vh);
+    // Paint first frame immediately so the scene isn't black on load.
+    try {
+      proxyCtx.drawImage(video, 0, 0, vw, vh);
+    } catch (e) {
+      console.warn('[VoidPlay] First-frame draw failed:', e);
+    }
 
-    /* Build the CanvasTexture — same-origin, no security restrictions */
-    canvasTex = new THREE.CanvasTexture(proxyCanvas);
-    canvasTex.minFilter = THREE.LinearFilter;
-    canvasTex.magFilter = THREE.LinearFilter;
+    // Build the CanvasTexture from the same-origin proxy canvas.
+    canvasTex            = new THREE.CanvasTexture(proxyCanvas);
+    canvasTex.minFilter  = THREE.LinearFilter;
+    canvasTex.magFilter  = THREE.LinearFilter;
 
-    buildScene();
+    buildScene();        // geometry + material use canvasTex
+    startFramePump(video); // begin per-frame drawImage + needsUpdate loop
 
-    /* Start pumping frames from the video into the proxy canvas */
-    startFramePump(video);
-
-    /* Play with mute-and-retry fallback for autoplay policy */
-    video.play().catch(function() {
+    // Attempt playback; fall back to muted if autoplay policy blocks audio.
+    video.play().catch(() => {
       video.muted = true;
       el.muteBtn.textContent = '\uD83D\uDD07';
-      setStatus('Audio muted by autoplay policy - click speaker to restore', 'warn');
-      video.play().catch(function() {
-        setStatus('Playback blocked - interact with the page first', 'err');
+      setStatus('Audio muted by autoplay policy \u2014 click \uD83D\uDD0A to restore', 'warn');
+      video.play().catch(() => {
+        setStatus('Playback blocked \u2014 interact with the page first', 'err');
       });
     });
 
     setStatus('Playing', 'ok');
     el.playBtn.textContent = '\u23F8';
-    el.playBtn.disabled = false;
+    el.playBtn.disabled    = false;
     updateNavButtons();
-    el.urlInput.value = url;
+    el.urlInput.value      = url;
   });
 
-  /* Set src AFTER listeners. Do NOT call video.load() — setting src
-     starts the fetch automatically. Calling load() after src resets
-     readyState to 0 and races canplay on mobile. */
-  video.src = url;
+  /*
+   * Set src AFTER all listeners. Do NOT call video.load() after src —
+   * it resets readyState to 0 and creates a canplay race on mobile.
+   */
+  video.src     = url;
   state.videoEl = video;
 
-  /* -- playlist -- */
+  // --- playlist bookkeeping ---
   if (!fromPlaylist) {
-    var idx = -1;
-    for (var i=0; i<state.playlist.length; i++) {
-      if (state.playlist[i].url === url) { idx=i; break; }
-    }
-    if (idx === -1) {
-      state.playlist.push({ url:url, name:getFilename(url) });
+    const existing = state.playlist.findIndex(v => v.url === url);
+    if (existing === -1) {
+      state.playlist.push({ url, name: getFilename(url) });
       state.current = state.playlist.length - 1;
       savePersist();
     } else {
-      state.current = idx;
+      state.current = existing;
     }
     renderPlaylist();
   }
 }
 
-/* ---- SEEK ---- */
+/* ================================================================
+   SEEK BAR
+================================================================ */
+
+/** Update progress fill, thumb position, and current-time label. */
 function updateSeek() {
-  var v=state.videoEl;
-  if (!v||!v.duration) return;
-  var pct=(v.currentTime/v.duration)*100;
-  el.seekFill.style.width  = pct+'%';
-  el.seekThumb.style.left  = pct+'%';
+  const v = state.videoEl;
+  if (!v || !v.duration) return;
+  const pct = (v.currentTime / v.duration) * 100;
+  el.seekFill.style.width  = `${pct}%`;
+  el.seekThumb.style.left  = `${pct}%`;
   el.timeCur.textContent   = fmtTime(v.currentTime);
 }
-function updateBuffered() {
-  var v=state.videoEl;
-  if (!v||!v.duration||!v.buffered.length) return;
-  el.seekBuf.style.width = (v.buffered.end(v.buffered.length-1)/v.duration*100)+'%';
-}
-var seeking=false;
-function seekTo(e) {
-  var v=state.videoEl;
-  if (!v||!v.duration) return;
-  var rect=el.seekTrack.getBoundingClientRect();
-  v.currentTime = Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width))*v.duration;
-}
-el.seekTrack.addEventListener('mousedown', function(e){ seeking=true; seekTo(e); });
-window.addEventListener('mousemove',       function(e){ if(seeking) seekTo(e); });
-window.addEventListener('mouseup',         function() { seeking=false; });
 
-/* ---- PLAYLIST ---- */
-function addToPlaylist(url, andPlay) {
+/** Update the buffered-range bar. */
+function updateBuffered() {
+  const v = state.videoEl;
+  if (!v || !v.duration || !v.buffered.length) return;
+  el.seekBuf.style.width =
+    `${(v.buffered.end(v.buffered.length - 1) / v.duration) * 100}%`;
+}
+
+let seeking = false;
+
+/** Seek to the position corresponding to a pointer event on the track. */
+const seekTo = e => {
+  const v = state.videoEl;
+  if (!v || !v.duration) return;
+  const rect = el.seekTrack.getBoundingClientRect();
+  v.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * v.duration;
+};
+
+el.seekTrack.addEventListener('mousedown', e => { seeking = true; seekTo(e); });
+window.addEventListener('mousemove',       e => { if (seeking) seekTo(e); });
+window.addEventListener('mouseup',         ()  => { seeking = false; });
+
+/* ================================================================
+   PAN + ZOOM
+================================================================ */
+
+const drag = { active: false, x: 0, y: 0, lon: 0, lat: 0 };
+
+el.canvas.addEventListener('mousedown', e => {
+  if (!state.panEnabled || !meshMain) return;
+  drag.active = true; drag.x = e.clientX; drag.y = e.clientY;
+  el.canvas.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mousemove', e => {
+  if (!drag.active) return;
+  drag.lon -= (e.clientX - drag.x) * 0.25;
+  drag.lat += (e.clientY - drag.y) * 0.15;
+  drag.lat  = Math.max(-85, Math.min(85, drag.lat));
+  drag.x    = e.clientX; drag.y = e.clientY;
+  applyPan();
+});
+
+window.addEventListener('mouseup', () => {
+  if (!drag.active) return;
+  drag.active = false;
+  el.canvas.style.cursor = state.panEnabled ? 'grab' : 'default';
+});
+
+el.canvas.addEventListener('touchstart', e => {
+  if (!state.panEnabled || !meshMain) return;
+  const t = e.touches[0];
+  drag.active = true; drag.x = t.clientX; drag.y = t.clientY;
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (!drag.active) return;
+  const t = e.touches[0];
+  drag.lon -= (t.clientX - drag.x) * 0.25;
+  drag.lat += (t.clientY - drag.y) * 0.15;
+  drag.lat  = Math.max(-85, Math.min(85, drag.lat));
+  drag.x    = t.clientX; drag.y = t.clientY;
+  applyPan();
+}, { passive: true });
+
+window.addEventListener('touchend', () => { drag.active = false; });
+
+/** Apply current lon/lat angles to the camera's look direction. */
+function applyPan() {
+  const phi   = THREE.MathUtils.degToRad(90 - drag.lat);
+  const theta = THREE.MathUtils.degToRad(drag.lon);
+  camera.lookAt(new THREE.Vector3(
+    500 * Math.sin(phi) * Math.cos(theta),
+    500 * Math.cos(phi),
+    500 * Math.sin(phi) * Math.sin(theta)
+  ));
+}
+
+el.canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const fov = Math.max(30, Math.min(150, camera.fov + e.deltaY * 0.04));
+  camera.fov = fov;
+  camera.updateProjectionMatrix();
+  el.zoomSlider.value    = fov;
+  el.zoomVal.textContent = `${Math.round(fov)}\u00b0`;
+}, { passive: false });
+
+/* ================================================================
+   PLAYLIST
+================================================================ */
+
+/**
+ * Add a URL to the end of the playlist.
+ * Rejects duplicates, invalid URLs, and playlists already at 2000 items.
+ * @param {string}  url       - URL to add
+ * @param {boolean} [andPlay=false] - Immediately begin playback if true
+ * @returns {boolean} True if the item was added
+ */
+function addToPlaylist(url, andPlay = false) {
   if (!isValidUrl(url)) return false;
-  var dup=false;
-  state.playlist.forEach(function(v){ if(v.url===url) dup=true; });
-  if (dup||state.playlist.length>=2000) return false;
-  state.playlist.push({ url:url, name:getFilename(url) });
+  if (state.playlist.some(v => v.url === url)) return false;
+  if (state.playlist.length >= 2000) return false;
+  state.playlist.push({ url, name: getFilename(url) });
   savePersist(); renderPlaylist(); updateNavButtons();
-  if (andPlay) { state.current=state.playlist.length-1; loadVideo(url,true); }
+  if (andPlay) { state.current = state.playlist.length - 1; loadVideo(url, true); }
   return true;
 }
+
+/**
+ * Remove a playlist item by index, adjusting the current-pointer.
+ * @param {number} idx
+ */
 function removeFromPlaylist(idx) {
-  state.playlist.splice(idx,1);
-  if (state.current===idx) state.current=-1;
-  else if (state.current>idx) state.current--;
+  state.playlist.splice(idx, 1);
+  if      (state.current === idx) state.current = -1;
+  else if (state.current > idx)   state.current--;
   savePersist(); renderPlaylist(); updateNavButtons();
 }
+
+/**
+ * Begin playback of the playlist item at the given index.
+ * @param {number} idx
+ */
 function playFromPlaylist(idx) {
-  if (idx<0||idx>=state.playlist.length) return;
-  state.current=idx; renderPlaylist();
+  if (idx < 0 || idx >= state.playlist.length) return;
+  state.current = idx;
+  renderPlaylist();
   loadVideo(state.playlist[idx].url, true);
 }
-function playNext() {
+
+/** Advance to the next item, wrapping around the end. */
+const playNext = () => {
   if (!state.playlist.length) return;
-  playFromPlaylist((state.current+1)%state.playlist.length);
-}
-function playPrev() {
+  playFromPlaylist((state.current + 1) % state.playlist.length);
+};
+
+/** Return to the previous item, wrapping around the start. */
+const playPrev = () => {
   if (!state.playlist.length) return;
-  playFromPlaylist(state.current>0 ? state.current-1 : state.playlist.length-1);
-}
-function updateNavButtons() {
-  var has=state.playlist.length>1;
-  el.prevBtn.disabled=!has; el.nextBtn.disabled=!has;
-}
+  playFromPlaylist(state.current > 0 ? state.current - 1 : state.playlist.length - 1);
+};
+
+/** Enable prev/next only when the playlist has more than one item. */
+const updateNavButtons = () => {
+  const has = state.playlist.length > 1;
+  el.prevBtn.disabled = !has;
+  el.nextBtn.disabled = !has;
+};
+
+/** Re-render the playlist sidebar list from state.playlist. */
 function renderPlaylist() {
-  el.plCount.textContent = state.playlist.length+' video'+(state.playlist.length!==1?'s':'');
+  el.plCount.textContent =
+    `${state.playlist.length} video${state.playlist.length !== 1 ? 's' : ''}`;
+
   if (!state.playlist.length) {
-    el.playlist.innerHTML='<div class="pl-empty">No videos.<br>Add a URL above.</div>';
+    el.playlist.innerHTML = '<div class="pl-empty">No videos.<br>Add a URL above.</div>';
     return;
   }
-  el.playlist.innerHTML = state.playlist.map(function(v,i){
-    return '<div class="pl-item '+(i===state.current?'active':'')+'" data-i="'+i+'">'
-      +'<div class="pl-num">'+(i+1)+'</div>'
-      +'<div class="pl-name" title="'+escHtml(v.url)+'">'+escHtml(truncate(v.name,28))+'</div>'
-      +'<button class="pl-del" data-del="'+i+'">\u2715</button>'
-      +'</div>';
-  }).join('');
+
+  el.playlist.innerHTML = state.playlist.map((v, i) =>
+    `<div class="pl-item ${i === state.current ? 'active' : ''}" data-i="${i}">
+      <div class="pl-num">${i + 1}</div>
+      <div class="pl-name" title="${escHtml(v.url)}">${escHtml(truncate(v.name, 28))}</div>
+      <button class="pl-del" data-del="${i}">\u2715</button>
+    </div>`
+  ).join('');
 }
-el.playlist.addEventListener('click', function(e) {
-  var d=e.target.closest('[data-del]');
-  if (d) { removeFromPlaylist(parseInt(d.dataset.del)); return; }
-  var item=e.target.closest('[data-i]');
-  if (item) playFromPlaylist(parseInt(item.dataset.i));
+
+el.playlist.addEventListener('click', e => {
+  const del  = e.target.closest('[data-del]');
+  if (del)  { removeFromPlaylist(parseInt(del.dataset.del, 10)); return; }
+  const item = e.target.closest('[data-i]');
+  if (item) playFromPlaylist(parseInt(item.dataset.i, 10));
 });
 
-/* ---- PERSIST ---- */
-function savePersist() {
-  try { localStorage.setItem('voidplay_v1', JSON.stringify(state.playlist)); } catch(e){}
-}
+/* ================================================================
+   PERSISTENCE
+================================================================ */
+
+/** Write the current playlist array to localStorage. */
+const savePersist = () => {
+  try { localStorage.setItem('voidplay_v1', JSON.stringify(state.playlist)); }
+  catch { /* quota exceeded — fail silently */ }
+};
+
+/** Restore a previously saved playlist from localStorage on startup. */
 function loadPersist() {
   try {
-    var raw=localStorage.getItem('voidplay_v1');
+    const raw = localStorage.getItem('voidplay_v1');
     if (!raw) return;
-    var parsed=JSON.parse(raw);
+    const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      state.playlist=parsed.filter(function(v){ return v&&isValidUrl(v.url); });
+      state.playlist = parsed.filter(v => v && isValidUrl(v.url));
       renderPlaylist(); updateNavButtons();
     }
-  } catch(e){}
+  } catch { /* corrupted storage — ignore */ }
 }
 
-/* ---- IMPORT / EXPORT ---- */
+/* ================================================================
+   IMPORT / EXPORT
+================================================================ */
+
+/** Export the playlist as a plain-text .txt file download. */
 function exportPlaylist() {
-  if (!state.playlist.length) { setStatus('Playlist is empty','warn'); return; }
-  var blob=new Blob([state.playlist.map(function(v){ return v.url; }).join('\n')],{type:'text/plain'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='voidplay-playlist.txt';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+  if (!state.playlist.length) { setStatus('Playlist is empty', 'warn'); return; }
+  const blob = new Blob([state.playlist.map(v => v.url).join('\n')], { type: 'text/plain' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'voidplay-playlist.txt';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
-el.importFile.addEventListener('change', function(e) {
-  var file=e.target.files[0];
-  if (!file||file.size>2e6) return;
-  file.text().then(function(text) {
-    var lines, trimmed=text.trim();
-    if (trimmed.charAt(0)==='[') {
-      lines=JSON.parse(trimmed).map(function(v){ return typeof v==='string'?v:v.url; });
+
+el.importFile.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file || file.size > 2e6) return;
+  file.text().then(text => {
+    const trimmed = text.trim();
+    let lines;
+    if (trimmed.charAt(0) === '[') {
+      // JSON array of URL strings or {url} objects
+      lines = JSON.parse(trimmed).map(v => (typeof v === 'string' ? v : v.url));
     } else {
-      lines=trimmed.split('\n').map(function(l){ return l.trim(); })
-        .filter(function(l){ return l&&l.charAt(0)!=='#'; });
+      // Plain-text, one URL per line; lines starting with # are comments
+      lines = trimmed.split('\n').map(l => l.trim()).filter(l => l && l.charAt(0) !== '#');
     }
-    var added=0;
-    lines.forEach(function(url){ if(isValidUrl(url)&&addToPlaylist(url)) added++; });
-    setStatus('Imported '+added+' video'+(added!==1?'s':''), added>0?'ok':'warn');
-  }).catch(function(){ setStatus('Import failed','err'); });
-  e.target.value='';
+    const added = lines.filter(url => isValidUrl(url) && addToPlaylist(url)).length;
+    setStatus(`Imported ${added} video${added !== 1 ? 's' : ''}`, added > 0 ? 'ok' : 'warn');
+  }).catch(() => setStatus('Import failed', 'err'));
+  e.target.value = ''; // allow re-import of the same file
 });
 
-/* ---- WEBXR ---- */
+/* ================================================================
+   WEBXR
+================================================================ */
+
+/** Query WebXR immersive-vr support and enable/disable the VR button. */
 function checkXRSupport() {
   if (!navigator.xr) return;
-  navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
-    el.vrBtn.disabled=!ok;
-    if (!ok) el.vrBtn.title='WebXR not available in this browser/device';
-  }).catch(function(){ el.vrBtn.disabled=true; });
+  navigator.xr.isSessionSupported('immersive-vr')
+    .then(ok => {
+      el.vrBtn.disabled = !ok;
+      if (!ok) el.vrBtn.title = 'WebXR not available in this browser/device';
+    })
+    .catch(() => { el.vrBtn.disabled = true; });
 }
+
+/** Toggle between entering and exiting an immersive-VR WebXR session. */
 function toggleVR() {
   if (state.vrSession) {
-    state.vrSession.end().then(function(){
-      state.vrSession=null;
-      el.vrBtn.innerHTML='<span>&#8857;</span> Enter VR';
+    state.vrSession.end().then(() => {
+      state.vrSession = null;
+      el.vrBtn.innerHTML = '<span>&#8857;</span> Enter VR';
     });
     return;
   }
-  navigator.xr.requestSession('immersive-vr',{requiredFeatures:['local-floor']})
-    .then(function(session){
-      state.vrSession=session;
+  navigator.xr.requestSession('immersive-vr', { requiredFeatures: ['local-floor'] })
+    .then(session => {
+      state.vrSession = session;
       renderer.xr.setSession(session);
-      el.vrBtn.innerHTML='<span>&#8857;</span> Exit VR';
-      session.addEventListener('end',function(){
-        state.vrSession=null;
-        el.vrBtn.innerHTML='<span>&#8857;</span> Enter VR';
+      el.vrBtn.innerHTML = '<span>&#8857;</span> Exit VR';
+      session.addEventListener('end', () => {
+        state.vrSession = null;
+        el.vrBtn.innerHTML = '<span>&#8857;</span> Enter VR';
       });
-    }).catch(function(err){ setStatus('VR failed: '+err.message,'err'); });
+    })
+    .catch(err => setStatus(`VR failed: ${err.message}`, 'err'));
 }
 
-/* ---- MODE SWITCH ---- */
-document.querySelectorAll('.mode-pill').forEach(function(pill) {
-  pill.addEventListener('click', function() {
-    document.querySelectorAll('.mode-pill').forEach(function(p){ p.classList.remove('active'); });
+/* ================================================================
+   MODE SWITCH
+================================================================ */
+
+document.querySelectorAll('.mode-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
-    state.mode=pill.dataset.mode;
-    drag.lon=0; drag.lat=0;
-    camera.lookAt(0,0,-1);
+    state.mode = pill.dataset.mode;
+    // Re-centre the camera when switching modes so pan state doesn't carry over.
+    drag.lon = 0; drag.lat = 0;
+    camera.lookAt(0, 0, -1);
     buildScene();
-    setStatus('Mode: '+state.mode,'ok');
+    setStatus(`Mode: ${state.mode}`, 'ok');
   });
 });
 
-/* ---- ZOOM ---- */
-el.zoomToggle.addEventListener('click', function(){
+/* ================================================================
+   ZOOM PANEL
+================================================================ */
+
+el.zoomToggle.addEventListener('click', () => {
   el.zoomPanel.classList.toggle('open');
   el.zoomToggle.classList.toggle('active');
 });
-el.zoomSlider.addEventListener('input', function(){
-  var v=parseFloat(el.zoomSlider.value);
-  camera.fov=v; camera.updateProjectionMatrix();
-  el.zoomVal.textContent=Math.round(v)+'\u00b0';
-});
-el.zoomReset.addEventListener('click', function(){
-  el.zoomSlider.value=90; camera.fov=90; camera.updateProjectionMatrix();
-  el.zoomVal.textContent='90\u00b0';
+
+el.zoomSlider.addEventListener('input', () => {
+  const v = parseFloat(el.zoomSlider.value);
+  camera.fov = v; camera.updateProjectionMatrix();
+  el.zoomVal.textContent = `${Math.round(v)}\u00b0`;
 });
 
-/* ---- PAN ---- */
-el.panBtn.addEventListener('click', function(){
-  state.panEnabled=!state.panEnabled;
+el.zoomReset.addEventListener('click', () => {
+  el.zoomSlider.value    = 90;
+  camera.fov             = 90;
+  camera.updateProjectionMatrix();
+  el.zoomVal.textContent = '90\u00b0';
+});
+
+/* ================================================================
+   PAN TOGGLE
+================================================================ */
+
+el.panBtn.addEventListener('click', () => {
+  state.panEnabled = !state.panEnabled;
   el.panBtn.classList.toggle('active', state.panEnabled);
-  el.canvas.style.cursor=state.panEnabled?'grab':'default';
-  setStatus(state.panEnabled?'Pan ON - drag to look around':'Pan OFF','');
+  el.canvas.style.cursor = state.panEnabled ? 'grab' : 'default';
+  setStatus(state.panEnabled ? 'Pan ON \u2014 drag to look around' : 'Pan OFF', '');
 });
 
-/* ---- HUD ---- */
-el.loadBtn.addEventListener('click', function(){ loadVideo(el.urlInput.value.trim()); });
-el.urlInput.addEventListener('keydown', function(e){ if(e.key==='Enter') loadVideo(el.urlInput.value.trim()); });
-el.playBtn.addEventListener('click', function(){
+/* ================================================================
+   HUD CONTROLS
+================================================================ */
+
+el.loadBtn.addEventListener('click',    () => loadVideo(el.urlInput.value.trim()));
+el.urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadVideo(el.urlInput.value.trim()); });
+
+el.playBtn.addEventListener('click', () => {
   if (!state.videoEl) return;
   state.videoEl.paused ? state.videoEl.play() : state.videoEl.pause();
 });
+
 el.prevBtn.addEventListener('click', playPrev);
 el.nextBtn.addEventListener('click', playNext);
-el.muteBtn.addEventListener('click', function(){
+
+el.muteBtn.addEventListener('click', () => {
   if (!state.videoEl) return;
-  state.videoEl.muted=!state.videoEl.muted;
-  el.muteBtn.textContent=state.videoEl.muted?'\uD83D\uDD07':'\uD83D\uDD0A';
+  state.videoEl.muted = !state.videoEl.muted;
+  el.muteBtn.textContent = state.videoEl.muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
 });
-el.volSlider.addEventListener('input', function(){
-  if (state.videoEl) state.videoEl.volume=parseFloat(el.volSlider.value);
+
+el.volSlider.addEventListener('input', () => {
+  if (state.videoEl) state.videoEl.volume = parseFloat(el.volSlider.value);
 });
+
 el.vrBtn.addEventListener('click', toggleVR);
 
-el.singleAddBtn.addEventListener('click', function(){
-  var url=el.singleInput.value.trim();
+el.singleAddBtn.addEventListener('click', () => {
+  const url = el.singleInput.value.trim();
   if (!url) return;
-  if (addToPlaylist(url,true)) el.singleInput.value='';
-  else setStatus('Invalid or duplicate URL','warn');
+  if (addToPlaylist(url, true)) el.singleInput.value = '';
+  else setStatus('Invalid or duplicate URL', 'warn');
 });
-el.singleInput.addEventListener('keydown', function(e){ if(e.key==='Enter') el.singleAddBtn.click(); });
-el.bulkAddBtn.addEventListener('click', function(){
-  var lines=el.bulkArea.value.split('\n')
-    .map(function(l){ return l.trim(); })
-    .filter(function(l){ return l&&l.charAt(0)!=='#'&&isValidUrl(l); });
-  var added=0;
-  lines.forEach(function(url){ if(addToPlaylist(url)) added++; });
-  if (added) { el.bulkArea.value=''; setStatus('Added '+added+' videos','ok'); }
-  else setStatus('No valid URLs found','warn');
+el.singleInput.addEventListener('keydown', e => { if (e.key === 'Enter') el.singleAddBtn.click(); });
+
+el.bulkAddBtn.addEventListener('click', () => {
+  const lines = el.bulkArea.value.split('\n')
+    .map(l => l.trim())
+    .filter(l => l && l.charAt(0) !== '#' && isValidUrl(l));
+  const added = lines.filter(url => addToPlaylist(url)).length;
+  if (added) { el.bulkArea.value = ''; setStatus(`Added ${added} videos`, 'ok'); }
+  else setStatus('No valid URLs found', 'warn');
 });
-el.importBtn.addEventListener('click', function(){ el.importFile.click(); });
-el.exportBtn.addEventListener('click', exportPlaylist);
-el.clearAllBtn.addEventListener('click', function(){
-  if (!state.playlist.length||!confirm('Clear playlist?')) return;
-  state.playlist=[]; state.current=-1;
+
+el.importBtn.addEventListener('click',   () => el.importFile.click());
+el.exportBtn.addEventListener('click',   exportPlaylist);
+
+el.clearAllBtn.addEventListener('click', () => {
+  if (!state.playlist.length || !confirm('Clear playlist?')) return;
+  state.playlist = []; state.current = -1;
   savePersist(); renderPlaylist(); updateNavButtons();
 });
 
-/* ---- KEYBOARD ---- */
-document.addEventListener('keydown', function(e) {
-  if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
-  if (e.code==='Space')       { e.preventDefault(); el.playBtn.click(); }
-  else if (e.code==='ArrowRight') { e.preventDefault(); e.shiftKey?playNext():(state.videoEl&&(state.videoEl.currentTime+=10)); }
-  else if (e.code==='ArrowLeft')  { e.preventDefault(); e.shiftKey?playPrev():(state.videoEl&&(state.videoEl.currentTime-=10)); }
-  else if (e.code==='ArrowUp')    { e.preventDefault(); if(state.videoEl){ state.videoEl.volume=Math.min(1,state.videoEl.volume+0.1); el.volSlider.value=state.videoEl.volume; } }
-  else if (e.code==='ArrowDown')  { e.preventDefault(); if(state.videoEl){ state.videoEl.volume=Math.max(0,state.videoEl.volume-0.1); el.volSlider.value=state.videoEl.volume; } }
-  else if (e.code==='KeyM')           { el.muteBtn.click(); }
-  else if (e.code==='KeyP')           { el.panBtn.click(); }
-  else if (e.code==='KeyZ')           { el.zoomToggle.click(); }
-  else if (e.code==='BracketRight')   { el.zoomSlider.value=Math.min(150,parseFloat(el.zoomSlider.value)+5); el.zoomSlider.dispatchEvent(new Event('input')); }
-  else if (e.code==='BracketLeft')    { el.zoomSlider.value=Math.max(30, parseFloat(el.zoomSlider.value)-5); el.zoomSlider.dispatchEvent(new Event('input')); }
+/* ================================================================
+   KEYBOARD SHORTCUTS
+================================================================ */
+
+document.addEventListener('keydown', e => {
+  // Don't intercept shortcuts while the user is typing.
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  switch (e.code) {
+    case 'Space':
+      e.preventDefault(); el.playBtn.click(); break;
+    case 'ArrowRight':
+      e.preventDefault();
+      e.shiftKey ? playNext() : state.videoEl && (state.videoEl.currentTime += 10); break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      e.shiftKey ? playPrev() : state.videoEl && (state.videoEl.currentTime -= 10); break;
+    case 'ArrowUp':
+      e.preventDefault();
+      if (state.videoEl) { state.videoEl.volume = Math.min(1, state.videoEl.volume + 0.1); el.volSlider.value = state.videoEl.volume; } break;
+    case 'ArrowDown':
+      e.preventDefault();
+      if (state.videoEl) { state.videoEl.volume = Math.max(0, state.videoEl.volume - 0.1); el.volSlider.value = state.videoEl.volume; } break;
+    case 'KeyM':         el.muteBtn.click(); break;
+    case 'KeyP':         el.panBtn.click(); break;
+    case 'KeyZ':         el.zoomToggle.click(); break;
+    case 'BracketRight':
+      el.zoomSlider.value = Math.min(150, parseFloat(el.zoomSlider.value) + 5);
+      el.zoomSlider.dispatchEvent(new Event('input')); break;
+    case 'BracketLeft':
+      el.zoomSlider.value = Math.max(30, parseFloat(el.zoomSlider.value) - 5);
+      el.zoomSlider.dispatchEvent(new Event('input')); break;
+  }
 });
 
-/* ---- INIT ---- */
+/* ================================================================
+   INIT
+================================================================ */
+
 loadPersist();
 checkXRSupport();
 </script>
